@@ -82,12 +82,22 @@ liest nur, es ändert nichts auf GitHub.
 | Was | API-Endpunkt |
 |---|---|
 | Repos mit Sternen, Forks, Issues | `GET /users/{user}/repos` |
-| Wer wann einen Stern gab | `GET /repos/{owner}/{repo}/stargazers` (mit `star+json`) – nur für Repos, deren Sternzahl gestiegen ist |
+| Wer wann einen Stern gab | `GET /repos/{owner}/{repo}/stargazers` (mit `star+json`) – nur für Repos, deren Sternzahl gestiegen ist, von der neuesten Seite rückwärts |
 | Neue Issues/PRs von anderen | Suche `user:{user} -author:{user} created:>…` |
 | Eigene PRs in fremden Repos | Suche `is:pr author:{user} -user:{user}` |
 
 Der letzte Stand liegt in `daten/stand.json` (steht nicht im Repo). Löschst du
 die Datei, fängt repo-radar von vorne an.
+
+## Tests
+
+```bash
+python -m unittest discover -s tests
+```
+
+Die Tests laufen ohne Netz – die GitHub-API wird durch feste Antworten
+ersetzt. Bei jedem Push prüft eine GitHub Action alle Python-Versionen von
+3.10 bis 3.13.
 
 ## Lizenz
 

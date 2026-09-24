@@ -145,6 +145,26 @@ def differenz(neu: int, alt: int | None) -> str:
     return f" ({neu - alt:+d})"
 
 
+def neue_sterngucker(gh: GitHub, nutzer: str, repo: str, anzahl: int, seit: datetime,
+                     max_seiten: int = 3) -> list[dict]:
+    """Wer seit `seit` einen Stern vergeben hat, neueste zuerst.
+
+    GitHub liefert die Sterngucker vom ältesten zum neuesten. Deshalb wird von
+    der letzten Seite rückwärts gelesen, bis ein Stern älter als `seit` ist.
+    """
+    grenze = iso(seit)
+    neue: list[dict] = []
+    letzte = max(1, -(-anzahl // 100))
+    for seite in range(letzte, max(0, letzte - max_seiten), -1):
+        daten = gh.hole(f"/repos/{nutzer}/{repo}/stargazers", {"per_page": 100, "page": seite},
+                        accept="application/vnd.github.star+json")
+        for g in reversed(daten):
+            if g.get("starred_at", "") <= grenze:
+                return neue
+            neue.append(g)
+    return neue
+
+
 def radar(gh: GitHub, nutzer: str, stand: dict, seit: datetime,
           mit_forks: bool) -> tuple[list[str], dict]:
     zeilen: list[str] = []
@@ -185,13 +205,9 @@ def radar(gh: GitHub, nutzer: str, stand: dict, seit: datetime,
                               "(wer, zeigt repo-radar mit Token)")
                 gefunden = True
                 continue
-            gucker = list(gh.alle_seiten(f"/repos/{nutzer}/{r['name']}/stargazers",
-                                         accept="application/vnd.github.star+json",
-                                         max_seiten=3))
-            for g in gucker:
-                if g.get("starred_at", "") > iso(seit):
-                    zeilen.append(f"- {r['name']}: {g['user']['login']} ({lesbar(g['starred_at'])})")
-                    gefunden = True
+            for g in neue_sterngucker(gh, nutzer, r["name"], r["stargazers_count"], seit):
+                zeilen.append(f"- {r['name']}: {g['user']['login']} ({lesbar(g['starred_at'])})")
+                gefunden = True
     else:
         zeilen.append("- (erster Lauf - ab dem nächsten Mal steht hier, wer neu dazukam)")
         gefunden = True
