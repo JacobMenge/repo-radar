@@ -209,7 +209,7 @@ def radar(gh: GitHub, nutzer: str, stand: dict, seit: datetime,
                 zeilen.append(f"- {r['name']}: {g['user']['login']} ({lesbar(g['starred_at'])})")
                 gefunden = True
     else:
-        zeilen.append("- (erster Lauf - ab dem nächsten Mal steht hier, wer neu dazukam)")
+        zeilen.append("- (erster Lauf, ab dem nächsten Mal steht hier, wer neu dazukam)")
         gefunden = True
     if not gefunden:
         zeilen.append("- keine")
@@ -305,7 +305,7 @@ def main() -> int:
         print(f"Fehler: {fehler}", file=sys.stderr)
         return 1
 
-    kopf = [f"# repo-radar - {args.nutzer} - {jetzt.astimezone():%d.%m.%Y %H:%M}", ""]
+    kopf = [f"# repo-radar für {args.nutzer} am {jetzt.astimezone():%d.%m.%Y um %H:%M}", ""]
     if stand.get("zeit"):
         kopf += [f"Letzter Lauf: {lesbar(stand['zeit'])}", ""]
     bericht = "\n".join(kopf + zeilen)

@@ -2,24 +2,22 @@
 
 **Was hat sich seit dem letzten Mal auf meinen GitHub-Repos getan?**
 
-Ein kleines Kommandozeilen-Werkzeug für die GitHub-REST-API. Ein Aufruf, und du
-siehst auf einen Blick:
+Ein kleines Kommandozeilen-Tool für die GitHub-API. Nach einem Video will ich
+wissen, ob auf den Repos dazu etwas passiert ist. Dafür klicke ich mich nicht
+mehr durch die Benachrichtigungen, sondern starte einfach repo-radar.
 
-* **Sterne, Forks und offene Issues** je Repo – mit der Änderung seit dem
+Das Tool zeigt dir:
+
+* **Sterne, Forks und offene Issues** pro Repo, dazu die Änderung seit dem
   letzten Lauf
 * **wer neu einen Stern vergeben hat**
 * **neue Issues und Pull Requests von anderen** in deinen Repos
-* **den Stand deiner eigenen Pull Requests** in fremden Repos (offen, gemergt,
-  geschlossen – und ob sich das seit dem letzten Mal geändert hat)
-
-Ich nutze es, um nach einem Video zu sehen, ob auf den Repos dazu etwas
-passiert ist, ohne mich durch die Benachrichtigungen zu klicken.
-
----
+* **deine eigenen Pull Requests** in fremden Repos: offen, gemergt oder
+  geschlossen und ob sich daran seit dem letzten Mal etwas geändert hat
 
 ## Installation
 
-Nur Python 3.10 oder neuer, keine weiteren Pakete.
+Du brauchst nur Python 3.10 oder neuer. Weitere Pakete sind nicht nötig.
 
 ```bash
 git clone https://github.com/JacobMenge/repo-radar.git
@@ -33,18 +31,18 @@ python repo_radar.py DEIN-NAME
 python repo_radar.py JacobMenge                          # seit dem letzten Lauf
 python repo_radar.py JacobMenge --tage 7                 # die letzten 7 Tage
 python repo_radar.py JacobMenge --markdown bericht.md    # zusätzlich als Datei
-python repo_radar.py JacobMenge --nur-anzeigen           # Stand nicht fortschreiben
+python repo_radar.py JacobMenge --nur-anzeigen           # Stand nicht speichern
 ```
 
 | Option | Bedeutung |
 |---|---|
-| `--tage N` | Zeitraum für neue Issues und Sterne. Ohne Angabe: seit dem letzten Lauf, beim ersten Lauf 7 Tage |
+| `--tage N` | Zeitraum für neue Issues und Sterne. Ohne Angabe gilt der letzte Lauf, beim ersten Mal sind es 7 Tage |
 | `--forks` | geforkte Repos mitzählen |
 | `--markdown DATEI` | Bericht zusätzlich als Markdown speichern |
 | `--stand DATEI` | wo der letzte Stand liegt (Standard: `daten/stand.json`) |
-| `--nur-anzeigen` | Stand nicht aktualisieren – der nächste Lauf vergleicht noch mit demselben |
+| `--nur-anzeigen` | Stand nicht speichern, der nächste Lauf vergleicht also mit demselben |
 
-Beispiel:
+So sieht das aus:
 
 ```
 ## Repos von JacobMenge (19)
@@ -63,31 +61,31 @@ device-orientation-color-interpolation            3         0         0
 
 ## Token (optional)
 
-Ohne Anmeldung erlaubt GitHub 60 Anfragen pro Stunde – für ein paar Läufe am
-Tag reicht das, ein Lauf braucht meist 3 bis 5. **Wer einen Stern vergeben
-hat**, gibt GitHub allerdings nur mit Token heraus; ohne Token steht dort nur
+Ohne Anmeldung erlaubt GitHub 60 Anfragen pro Stunde. Ein Lauf braucht meist
+3 bis 5, für ein paar Läufe am Tag reicht das also locker. Wer einen Stern
+vergeben hat, verrät GitHub aber nur mit Token. Ohne Token siehst du dort nur
 die Anzahl.
 
-repo-radar nimmt automatisch
+repo-radar sucht das Token selbst:
 
-1. die Umgebungsvariable `GITHUB_TOKEN` (oder `GH_TOKEN`), sonst
-2. das Token der GitHub CLI, wenn du mit `gh auth login` angemeldet bist.
+1. zuerst in der Umgebungsvariable `GITHUB_TOKEN` (oder `GH_TOKEN`)
+2. sonst bei der GitHub CLI, wenn du mit `gh auth login` angemeldet bist
 
 Ein [Fine-grained Token](https://github.com/settings/personal-access-tokens)
-ohne zusätzliche Rechte (nur öffentliche Repos lesen) genügt. repo-radar
-liest nur, es ändert nichts auf GitHub.
+ohne zusätzliche Rechte reicht aus. repo-radar liest nur und ändert nichts auf
+GitHub.
 
 ## Wie es funktioniert
 
 | Was | API-Endpunkt |
 |---|---|
-| Repos mit Sternen, Forks, Issues | `GET /users/{user}/repos` |
-| Wer wann einen Stern gab | `GET /repos/{owner}/{repo}/stargazers` (mit `star+json`) – nur für Repos, deren Sternzahl gestiegen ist, von der neuesten Seite rückwärts |
-| Neue Issues/PRs von anderen | Suche `user:{user} -author:{user} created:>…` |
+| Repos mit Sternen, Forks und Issues | `GET /users/{user}/repos` |
+| Wer wann einen Stern gab | `GET /repos/{owner}/{repo}/stargazers` mit `star+json`. Nur bei Repos mit mehr Sternen als beim letzten Mal, ab der neuesten Seite |
+| Neue Issues und PRs von anderen | Suche `user:{user} -author:{user} created:>…` |
 | Eigene PRs in fremden Repos | Suche `is:pr author:{user} -user:{user}` |
 
-Der letzte Stand liegt in `daten/stand.json` (steht nicht im Repo). Löschst du
-die Datei, fängt repo-radar von vorne an.
+Der letzte Stand liegt in `daten/stand.json` und landet nicht im Repo. Wenn du
+die Datei löschst, fängt repo-radar von vorne an.
 
 ## Tests
 
@@ -95,10 +93,10 @@ die Datei, fängt repo-radar von vorne an.
 python -m unittest discover -s tests
 ```
 
-Die Tests laufen ohne Netz – die GitHub-API wird durch feste Antworten
-ersetzt. Bei jedem Push prüft eine GitHub Action alle Python-Versionen von
-3.10 bis 3.13.
+Die Tests brauchen kein Netz, weil die GitHub-API durch feste Antworten
+ersetzt wird. Bei jedem Push laufen sie per GitHub Action auf Python 3.10 bis
+3.13.
 
 ## Lizenz
 
-MIT – siehe [LICENSE](LICENSE).
+MIT, siehe [LICENSE](LICENSE).
